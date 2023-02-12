@@ -13,5 +13,12 @@ namespace proyecto_final_csharp_web_api.Controllers
         {
             VentaHandler.ProcesarVenta(listaProductoVendidos, idUsuario);
         }
+
+        [HttpGet ("{idUsuario}")]
+        
+        public List<Models.Venta> TraerVentas(long idUsuario)
+        {
+            return VentaHandler.ObtenerVentasPorIdUsuario(idUsuario);
+        }
     }
 }

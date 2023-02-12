@@ -53,7 +53,7 @@ namespace proyecto_final_csharp_web_api.Repositories
             using (SqlConnection conn = ConnectionHandler.ConnectToDb())
             {
                 Venta venta = new Venta();
-                SqlCommand command = new SqlCommand("SELECT TOP (1) [Id],[Comentarios],[IdUsuario] FROM [SistemaGestion].[dbo].[Venta] WHERE Id=@idUsuario ORDER BY Id DESC", conn);
+                SqlCommand command = new SqlCommand("SELECT TOP (1) [Id],[Comentarios],[IdUsuario] FROM [SistemaGestion].[dbo].[Venta] WHERE IdUsuario=@idUsuario ORDER BY Id DESC", conn);
                 SqlParameter idParameter = new SqlParameter();
                 idParameter.ParameterName = "idUsuario";
                 idParameter.SqlDbType = SqlDbType.BigInt;
@@ -135,6 +135,42 @@ namespace proyecto_final_csharp_web_api.Repositories
             }
 
             return 1;
+        }
+
+        public static List<Venta> ObtenerVentasPorIdUsuario(long idUsuario)
+        {
+            using (SqlConnection conn = ConnectionHandler.ConnectToDb())
+            {
+                List<Venta> listaVentasPorIdUsuario = new List<Venta>();
+
+                Venta venta = new Venta();
+                SqlCommand command = new SqlCommand("SELECT * FROM Venta WHERE IdUsuario=@IdUsuario", conn);
+                SqlParameter idParameter = new SqlParameter();
+                idParameter.ParameterName = "idUsuario";
+                idParameter.SqlDbType = SqlDbType.BigInt;
+                idParameter.Value = idUsuario;
+
+                command.Parameters.Add(idParameter);
+
+                conn.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+
+                    while (reader.Read())
+                    {
+                        Venta ventatemporal = new Venta();
+                        ventatemporal.Id = reader.GetInt64(0);
+                        ventatemporal.Comentarios = reader.GetString(1);
+                        ventatemporal.IdUsuario = reader.GetInt64(2);
+                        listaVentasPorIdUsuario.Add(ventatemporal);
+                    }
+                }
+
+                return listaVentasPorIdUsuario;
+            }
         }
     }
 }

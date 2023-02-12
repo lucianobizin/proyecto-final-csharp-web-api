@@ -94,5 +94,45 @@ namespace proyecto_final_csharp_web_api.Repositories
                 return command.ExecuteNonQuery();
             }
         }
+
+        public static List<Models.Producto> ObtenerProductosVendidosPorUsuario(long idUsuario)
+        {
+            List<long> listaIdProductos = new List<long>();
+
+            using (SqlConnection conn = ConnectionHandler.ConnectToDb())
+            {
+                Models.Producto producto = new Models.Producto();
+                SqlCommand command = new SqlCommand("SELECT ProductoVendido.IdProducto FROM ProductoVendido INNER JOIN Venta ON Venta.Id = ProductoVendido.IdVenta WHERE Venta.IdUsuario = @idUsuario", conn);
+                SqlParameter idParameter = new SqlParameter();
+                idParameter.ParameterName = "idUsuario";
+                idParameter.SqlDbType = SqlDbType.BigInt;
+                idParameter.Value = idUsuario;
+
+                command.Parameters.Add(idParameter);
+
+                conn.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+
+                if (reader.HasRows)
+                {
+
+                    while (reader.Read())
+                    {
+                        listaIdProductos.Add(reader.GetInt64(0));
+                    }
+                }
+            }
+
+            List<Models.Producto> productos = new List<Models.Producto>();
+            foreach (long idProducto in listaIdProductos)
+            {
+                Models.Producto productoTemporal = ProductoHandler.ObtenerProductoPorId(idProducto);
+                productos.Add(productoTemporal);
+            }
+
+            return productos;
+        }
     }
 }

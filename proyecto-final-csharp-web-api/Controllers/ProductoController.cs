@@ -8,6 +8,15 @@ namespace proyecto_final_csharp_web_api.Controllers
     [ApiController]
     public class ProductoController : ControllerBase
     {
+
+        [HttpGet("{idUsuario}")]
+
+        public List<Models.Producto> TraerProductosPorIdUsuario(long idUsuario)
+        {
+            return ProductoHandler.ObtenerProductoPorIdUsuario(idUsuario);
+        }
+
+
         [HttpPost]
         public void CrearProducto(Models.Producto producto)
         {
@@ -21,9 +30,9 @@ namespace proyecto_final_csharp_web_api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public void BorrarProducto(long id)
+        public string BorrarProducto(long id)
         {
-            ProductoHandler.EliminarProducto(id);
+            return ProductoHandler.EliminarProducto(id) == 1 ? $"El producto {id} ha sido borrado" : "No se pudo borrar el producto";
         }
     }
 }

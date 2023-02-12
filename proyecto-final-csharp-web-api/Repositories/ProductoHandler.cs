@@ -80,20 +80,20 @@ namespace proyecto_final_csharp_web_api.Repositories
             }
         }
 
-        public static List<Models.Producto> ObtenerProductosVendidosPorUsuario(long idUsuario)
+        public static List<Models.Producto> ObtenerProductoPorIdUsuario(long idUsuario)
         {
-            List<long> listaIdProductos = new List<long>();
-
             using (SqlConnection conn = ConnectionHandler.ConnectToDb())
             {
-                Models.Producto producto = new Models.Producto();
-                SqlCommand command = new SqlCommand("SELECT ProductoVendido.IdProducto FROM ProductoVendido INNER JOIN Venta ON Venta.Id = ProductoVendido.IdVenta WHERE Venta.IdUsuario = @idUsuario", conn);
-                SqlParameter idParameter = new SqlParameter();
-                idParameter.ParameterName = "idUsuario";
-                idParameter.SqlDbType = SqlDbType.BigInt;
-                idParameter.Value = idUsuario;
+                List<Models.Producto> productosPorIdUsuario = new List<Models.Producto>();
 
-                command.Parameters.Add(idParameter);
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Producto WHERE IdUsuario=@idUsuario", conn);
+                SqlParameter idParameterIdUsuario = new SqlParameter();
+                idParameterIdUsuario.ParameterName = "idUsuario";
+                idParameterIdUsuario.SqlDbType = SqlDbType.BigInt;
+                idParameterIdUsuario.Value = idUsuario;
+
+                command.Parameters.Add(idParameterIdUsuario);
 
                 conn.Open();
 
@@ -105,19 +105,19 @@ namespace proyecto_final_csharp_web_api.Repositories
 
                     while (reader.Read())
                     {
-                        listaIdProductos.Add(reader.GetInt64(0));
+                        Models.Producto producto = new Models.Producto();
+                        producto.Id = reader.GetInt64(0);
+                        producto.Descripciones = reader.GetString(1);
+                        producto.Costo = reader.GetDecimal(2);
+                        producto.PrecioVenta = reader.GetDecimal(3);
+                        producto.Stock = reader.GetInt32(4);
+                        producto.IdUsuario = reader.GetInt64(5);
+                        productosPorIdUsuario.Add(producto);
                     }
                 }
-            }
 
-            List<Models.Producto> productos = new List<Models.Producto>();
-            foreach (long idProducto in listaIdProductos)
-            {
-                Models.Producto productoTemporal = ObtenerProductoPorId(idProducto);
-                productos.Add(productoTemporal);
+                return productosPorIdUsuario;
             }
-
-            return productos;
         }
 
         public static int InsertarProducto(Models.Producto producto)
@@ -216,13 +216,16 @@ namespace proyecto_final_csharp_web_api.Repositories
         {
             using (SqlConnection conn = ConnectionHandler.ConnectToDb())
             {
-                if (ProductoVendidoHandler.EliminarProductoVendidoPorIdProducto(id) >= 1)
+
+                try
                 {
+                    ProductoVendidoHandler.EliminarProductoVendidoPorIdProducto(id);
+
                     SqlCommand command = new SqlCommand("DELETE FROM Producto WHERE Id=@id", conn);
 
                     SqlParameter idParameterId = new SqlParameter();
                     idParameterId.ParameterName = "id";
-                    idParameterId.SqlDbType = SqlDbType.Int;
+                    idParameterId.SqlDbType = SqlDbType.BigInt;
                     idParameterId.Value = id;
 
                     command.Parameters.Add(idParameterId);
@@ -232,12 +235,42 @@ namespace proyecto_final_csharp_web_api.Repositories
                     return command.ExecuteNonQuery();
                 }
 
-                else
+                catch
                 {
-                    return -1;
-                }
+                    SqlCommand command = new SqlCommand("DELETE FROM Producto WHERE Id=@id", conn);
 
+                    SqlParameter idParameterId = new SqlParameter();
+                    idParameterId.ParameterName = "id";
+                    idParameterId.SqlDbType = SqlDbType.BigInt;
+                    idParameterId.Value = id;
+
+                    command.Parameters.Add(idParameterId);
+
+                    conn.Open();
+
+                    return command.ExecuteNonQuery();
+                }
             }
         }
+
+        //public static int EliminarProducto(long id)
+        //{
+        //    using (SqlConnection conn = ConnectionHandler.ConnectToDb())
+        //    {
+        //        SqlCommand command = new SqlCommand("DELETE FROM Producto WHERE Id=@id", conn);
+
+        //        SqlParameter idParameterId = new SqlParameter();
+        //        idParameterId.ParameterName = "id";
+        //        idParameterId.SqlDbType = SqlDbType.BigInt;
+        //        idParameterId.Value = id;
+
+        //        command.Parameters.Add(idParameterId);
+
+        //        conn.Open();
+
+        //        return command.ExecuteNonQuery();
+
+        //    }
+        //}
     }
 }
